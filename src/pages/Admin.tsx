@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
-import { Loader2, PlusCircle, ShieldCheck, FileText, ArrowLeft, Bell, Calendar, AlertTriangle, RefreshCw, Edit2, Trash2, Users } from 'lucide-react';
+import { Loader2, PlusCircle, ShieldCheck, FileText, ArrowLeft, Bell, Calendar, AlertTriangle, RefreshCw, Edit2, Trash2, Users, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
@@ -24,7 +24,6 @@ const Admin = () => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const navigate = useNavigate();
 
@@ -40,9 +39,6 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      setNotificationsEnabled(true);
-    }
     if (profile) fetchAnnouncements();
   }, [profile]);
 
@@ -213,7 +209,8 @@ const Admin = () => {
                   <div style={{ position: 'relative' }}>
                     <Clock size={18} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', pointerEvents: 'none' }} />
                     <input 
-                      type="time" 
+                      type="text" 
+                      placeholder="HH:MM"
                       className="calendar-input" 
                       value={scheduledAt.split('T')[1]} 
                       onChange={e => setScheduledAt(`${scheduledAt.split('T')[0]}T${e.target.value}`)} 
