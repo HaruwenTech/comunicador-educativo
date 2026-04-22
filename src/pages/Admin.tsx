@@ -196,6 +196,33 @@ const Admin = () => {
               </div>
 
               <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Secciones</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {['A', 'B', 'C', 'Todas'].map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        if (s === 'Todas') setSelectedSections(['Todas']);
+                        else setSelectedSections(prev => prev.filter(i => i !== 'Todas').includes(s) ? prev.filter(i => i !== s) : [...prev.filter(i => i !== 'Todas'), s]);
+                      }}
+                      style={{
+                        padding: '0.4rem 0.6rem',
+                        fontSize: '0.75rem',
+                        borderRadius: '8px',
+                        background: selectedSections.includes(s) ? 'var(--primary)' : '#f8fafc',
+                        color: selectedSections.includes(s) ? 'white' : 'var(--secondary)',
+                        border: '1px solid var(--border)',
+                        fontWeight: 600
+                      }}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Asunto</label>
                 <input 
                   className="input-field" 
