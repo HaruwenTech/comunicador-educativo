@@ -24,10 +24,10 @@ const Header = () => {
             <Zap size={22} fill="white" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', background: 'linear-gradient(90deg, var(--foreground), var(--primary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.03em', background: 'linear-gradient(90deg, var(--foreground), var(--primary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               W.I.N.
             </h1>
-            <p style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--secondary)', marginTop: '-0.2rem', opacity: 0.8 }}>Wayen Info Network</p>
+            <p className="hide-mobile" style={{ fontSize: '0.6rem', fontWeight: 600, color: 'var(--secondary)', marginTop: '-0.2rem', opacity: 0.8 }}>Wayen Info Network</p>
           </div>
         </Link>
         

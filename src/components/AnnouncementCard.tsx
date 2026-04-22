@@ -105,8 +105,9 @@ const AnnouncementCard = ({ announcement }: Props) => {
           borderTop: '2px solid #f1f5f9'
         }}>
           {/* Target Group Block - MUCH BIGGER AND VIBRANT */}
-          <div style={{ 
-            background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+          <div className="target-block" style={{ 
+            marginTop: 'auto',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', 
             padding: '1.25rem 1.75rem',
             borderRadius: '20px',
             color: 'white',

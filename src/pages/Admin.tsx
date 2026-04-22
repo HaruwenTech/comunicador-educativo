@@ -133,24 +133,34 @@ const Admin = () => {
       </div>
 
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+        gap: '1rem', 
+        marginBottom: '2.5rem' 
+      }}>
         {[
-          { label: 'Total Comunicados', value: stats.total, icon: <FileText color="#6366f1" />, bg: '#eef2ff' },
-          { label: 'Alertas Hoy', value: stats.today, icon: <Bell color="#10b981" />, bg: '#ecfdf5' },
-          { label: 'Urgentes/Paros', value: stats.urgent, icon: <AlertTriangle color="#ef4444" />, bg: '#fef2f2' },
-          { label: 'Personal Admin', value: '4 Activos', icon: <Users color="#f59e0b" />, bg: '#fffbeb' },
+          { label: 'Total', value: stats.total, icon: <FileText size={18} color="#6366f1" />, bg: '#eef2ff' },
+          { label: 'Hoy', value: stats.today, icon: <Bell size={18} color="#10b981" />, bg: '#ecfdf5' },
+          { label: 'Urgentes', value: stats.urgent, icon: <AlertTriangle size={18} color="#ef4444" />, bg: '#fef2f2' },
+          { label: 'Staff', value: '4', icon: <Users size={18} color="#f59e0b" />, bg: '#fffbeb' },
         ].map((s, i) => (
-          <motion.div key={i} whileHover={{ y: -5 }} className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.2rem', border: 'none', background: 'white' }}>
-            <div style={{ padding: '1rem', background: s.bg, borderRadius: '16px' }}>{s.icon}</div>
+          <motion.div key={i} whileHover={{ y: -5 }} className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.8rem', border: 'none', background: 'white' }}>
+            <div style={{ padding: '0.6rem', background: s.bg, borderRadius: '12px' }}>{s.icon}</div>
             <div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 700, margin: 0 }}>{s.label}</p>
-              <h4 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{s.value}</h4>
+              <p style={{ fontSize: '0.65rem', color: 'var(--secondary)', fontWeight: 700, margin: 0 }}>{s.label}</p>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{s.value}</h4>
             </div>
           </motion.div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '2rem', alignItems: 'start' }}>
+      <div className="admin-grid" style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+        gap: '2rem', 
+        alignItems: 'start' 
+      }}>
         {/* Left: Form */}
         <motion.div className="card" style={{ padding: '2rem', background: 'white' }}>
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800 }}>

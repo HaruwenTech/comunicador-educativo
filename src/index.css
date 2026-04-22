@@ -61,7 +61,7 @@ main {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
 }
 
 h1, h2, h3, h4 {
@@ -190,14 +190,28 @@ button {
 
 /* Navigation */
 .header {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--glass-border);
-  padding: 1rem 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 0;
+  }
+}
+.hide-mobile {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
 }
 
 .nav-link {
@@ -209,6 +223,33 @@ button {
 
 .nav-link:hover {
   color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .target-block {
+    padding: 1rem !important;
+    gap: 0.8rem !important;
+  }
+  .target-block h4 {
+    font-size: 1.1rem !important;
+  }
+  .target-block svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .input-field {
+    padding: 0.8rem 1rem !important;
+  }
+  .card {
+    padding: 1.5rem !important;
+  }
+  h2 {
+    font-size: 1.5rem !important;
+  }
 }
 
 /* Animations */
