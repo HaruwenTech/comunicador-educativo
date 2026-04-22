@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Announcement } from '../types';
 import AnnouncementCard from '../components/AnnouncementCard';
-import { Loader2, RefreshCw, Filter, Bell, LayoutDashboard, Search } from 'lucide-react';
+import { Loader2, RefreshCw, Bell, LayoutDashboard, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
 import { motion, AnimatePresence } from 'framer-motion';
