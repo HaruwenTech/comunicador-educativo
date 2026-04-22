@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format, isToday, isTomorrow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { AlertTriangle, Clock, Info, Megaphone, Calendar, ArrowRight, Users, GraduationCap } from 'lucide-react';
+import { AlertTriangle, Clock, Info, Megaphone, Calendar, ArrowRight, GraduationCap } from 'lucide-react';
 import type { Announcement } from '../types';
 import { motion } from 'framer-motion';
 
