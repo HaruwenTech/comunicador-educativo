@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Safety fallback: ensure loading is turned off eventually
     const timer = setTimeout(() => {
-      setLoading(prev => {
+      setLoading(() => {
         return false;
       });
     }, 5000);

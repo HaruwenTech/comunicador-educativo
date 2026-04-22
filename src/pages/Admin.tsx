@@ -24,7 +24,7 @@ const Admin = () => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [notificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const navigate = useNavigate();
 
