@@ -51,9 +51,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentUser.email === 'melina.figueroa.89@gmail.com') {
           setProfile({
             id: currentUser.id,
+            email: currentUser.email || '',
             full_name: 'Melina Figueroa',
             role: 'super_admin',
-            created_at: new Date().toISOString()
+            grade: null,
+            section: null
           });
           setLoading(false);
         } else {
@@ -85,9 +87,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Fallback profile if record doesn't exist
         setProfile({
           id: userId,
+          email: '',
           full_name: 'Usuario',
           role: 'parent',
-          created_at: new Date().toISOString()
+          grade: null,
+          section: null
         });
       }
     } catch (e) {

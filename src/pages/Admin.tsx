@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
 import { Loader2, PlusCircle, LogOut, ShieldCheck, Settings, Type, FileText, Users, ArrowLeft } from 'lucide-react';
