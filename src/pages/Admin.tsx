@@ -15,8 +15,8 @@ const Admin = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState<AnnouncementType>('info');
-  const [grade, setGrade] = useState('all');
-  const [section, setSection] = useState('all');
+  const [selectedGrades, setSelectedGrades] = useState<string[]>(['1ro']);
+  const [selectedSections, setSelectedSections] = useState<string[]>(['A']);
 
   const navigate = useNavigate();
 
@@ -29,7 +29,14 @@ const Admin = () => {
     
     setSubmitting(true);
     const { error } = await supabase.from('announcements').insert([
-      { title, content, type, grade, section, author_id: profile?.id }
+      { 
+        title, 
+        content, 
+        type, 
+        grade: selectedGrades.join(', '), 
+        section: selectedSections.join(', '), 
+        author_id: profile?.id 
+      }
     ]);
 
     if (!error) {
@@ -81,11 +88,10 @@ const Admin = () => {
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }} className="hide-mobile">
             <p style={{ fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{profile?.full_name || profile?.email || user?.email}</p>
-            <p style={{ fontSize: '0.7rem', color: 'var(--secondary)', margin: 0 }}>Super Administrador</p>
+            <p style={{ fontSize: '0.7rem', color: 'var(--secondary)', margin: 0 }}>
+              {profile?.role === 'super_admin' ? 'Super Administrador' : 'Administrador'}
+            </p>
           </div>
-          <button onClick={signOut} style={{ background: '#fee2e2', color: '#ef4444', width: '40px', height: '40px', borderRadius: '12px' }}>
-            <LogOut size={18} />
-          </button>
         </div>
       </div>
 
@@ -134,24 +140,85 @@ const Admin = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', color: 'var(--secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', color: 'var(--secondary)' }}>
                     <Users size={16} />
-                    <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>Grado</label>
+                    <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>Grados</label>
                   </div>
-                  <select className="input-field" value={grade} onChange={e => setGrade(e.target.value)} style={{ padding: '0.75rem' }}>
-                    {grades.map(g => <option key={g} value={g}>{g === 'all' ? 'Toda la Escuela' : g}</option>)}
-                  </select>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {['1ro', '2do', '3ro', '4to', '5to', '6to', 'Todas'].map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => {
+                          if (g === 'Todas') {
+                            setSelectedGrades(['Todas']);
+                          } else {
+                            setSelectedGrades(prev => {
+                              const filtered = prev.filter(item => item !== 'Todas');
+                              if (filtered.includes(g)) {
+                                return filtered.filter(item => item !== g);
+                              }
+                              return [...filtered, g];
+                            });
+                          }
+                        }}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.8rem',
+                          borderRadius: '10px',
+                          background: selectedGrades.includes(g) ? 'var(--primary)' : '#f8fafc',
+                          color: selectedGrades.includes(g) ? 'white' : 'var(--secondary)',
+                          border: '1px solid',
+                          borderColor: selectedGrades.includes(g) ? 'var(--primary)' : 'var(--border)',
+                          fontWeight: 600
+                        }}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', color: 'var(--secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', color: 'var(--secondary)' }}>
                     <Settings size={16} />
-                    <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>Sección</label>
+                    <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>Secciones</label>
                   </div>
-                  <select className="input-field" value={section} onChange={e => setSection(e.target.value)} style={{ padding: '0.75rem' }}>
-                    {sections.map(s => <option key={s} value={s}>{s === 'all' ? 'Todas' : s}</option>)}
-                  </select>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {['A', 'B', 'C', 'Todas'].map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          if (s === 'Todas') {
+                            setSelectedSections(['Todas']);
+                          } else {
+                            setSelectedSections(prev => {
+                              const filtered = prev.filter(item => item !== 'Todas');
+                              if (filtered.includes(s)) {
+                                return filtered.filter(item => item !== s);
+                              }
+                              return [...filtered, s];
+                            });
+                          }
+                        }}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.8rem',
+                          borderRadius: '10px',
+                          background: selectedSections.includes(s) ? 'var(--primary)' : '#f8fafc',
+                          color: selectedSections.includes(s) ? 'white' : 'var(--secondary)',
+                          border: '1px solid',
+                          borderColor: selectedSections.includes(s) ? 'var(--primary)' : 'var(--border)',
+                          fontWeight: 600
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

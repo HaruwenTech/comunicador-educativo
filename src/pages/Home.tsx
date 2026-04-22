@@ -20,16 +20,21 @@ const Home = () => {
 
   const fetchAnnouncements = async () => {
     setLoading(true);
-    let query = supabase
+    const { data, error } = await supabase
       .from('announcements')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (selectedGrade !== 'all') query = query.eq('grade', selectedGrade);
-    if (selectedSection !== 'all') query = query.eq('section', selectedSection);
-
-    const { data, error } = await query;
-    if (!error && data) setAnnouncements(data);
+    if (!error && data) {
+      let filtered = data;
+      if (selectedGrade !== 'all') {
+        filtered = filtered.filter(a => a.grade.includes(selectedGrade) || a.grade.includes('Todas'));
+      }
+      if (selectedSection !== 'all') {
+        filtered = filtered.filter(a => a.section.includes(selectedSection) || a.section.includes('Todas'));
+      }
+      setAnnouncements(filtered);
+    }
     setLoading(false);
   };
 
