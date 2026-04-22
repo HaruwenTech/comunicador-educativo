@@ -62,7 +62,10 @@ const Header = () => {
 
           {user && (
             <button 
-              onClick={signOut}
+              onClick={async () => {
+                await signOut();
+                window.location.href = '/login';
+              }}
               style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', width: '38px', height: '38px', borderRadius: '12px' }}
               title="Cerrar Sesión"
             >

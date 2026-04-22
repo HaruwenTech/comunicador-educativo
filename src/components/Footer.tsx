@@ -20,14 +20,18 @@ const Footer = () => {
           fontWeight: 600
         }}>
           Hecho con <Heart size={16} fill="var(--danger)" color="var(--danger)" /> por 
-          <span style={{ 
-            background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 800
-          }}>
+          <a 
+            href="https://haruwentech.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ 
+              color: 'var(--primary)',
+              fontWeight: 600,
+              textDecoration: 'none'
+            }}
+          >
             HaruwenTech
-          </span>
+          </a>
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#94a3b8' }}>
           © {new Date().getFullYear()} W.I.N. - Wayen Info Network
