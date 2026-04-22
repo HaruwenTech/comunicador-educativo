@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
-import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell } from 'lucide-react';
+import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';

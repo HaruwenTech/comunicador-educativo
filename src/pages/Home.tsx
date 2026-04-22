@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Announcement } from '../types';
 import AnnouncementCard from '../components/AnnouncementCard';
-import { Loader2, RefreshCw, Bell, LayoutDashboard, Search } from 'lucide-react';
+import { Loader2, RefreshCw, LayoutDashboard, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -138,20 +138,36 @@ const Home = () => {
                 }
               }}
               style={{ 
-                padding: '0.6rem 1rem', 
-                background: notificationsEnabled ? 'var(--primary)' : '#f8fafc', 
-                color: notificationsEnabled ? 'white' : 'var(--secondary)',
-                border: notificationsEnabled ? 'none' : '1px solid var(--border)', 
-                fontSize: '0.875rem',
+                padding: '0.6rem 1.2rem', 
+                background: notificationsEnabled ? 'rgba(16, 185, 129, 0.1)' : '#f8fafc', 
+                color: notificationsEnabled ? '#065f46' : 'var(--secondary)',
+                border: notificationsEnabled ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid var(--border)', 
+                fontSize: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                borderRadius: '12px',
+                gap: '0.6rem',
+                borderRadius: '100px', // More pill-shaped/modern
                 cursor: 'pointer',
-                fontWeight: 600
+                fontWeight: 700,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: notificationsEnabled ? '0 0 15px rgba(16, 185, 129, 0.1)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                if (notificationsEnabled) e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                if (notificationsEnabled) e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
               }}
             >
-              <Bell size={18} fill={notificationsEnabled ? "currentColor" : "none"} />
+              <div style={{ 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                background: notificationsEnabled ? '#10b981' : '#cbd5e1',
+                boxShadow: notificationsEnabled ? '0 0 8px #10b981' : 'none'
+              }}></div>
               {notificationsEnabled ? 'Alertas Activas' : 'Recibir Alertas'}
             </button>
           </div>
