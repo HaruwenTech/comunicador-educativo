@@ -43,9 +43,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log("Auth state change:", _event, !!session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        // Assign role immediately based on email if it's the owner
+        if (currentUser.email === 'melina.figueroa.89@gmail.com') {
+          setProfile({
+            id: currentUser.id,
+            full_name: 'Melina Figueroa',
+            role: 'super_admin',
+            created_at: new Date().toISOString()
+          });
+          setLoading(false);
+        } else {
+          await fetchProfile(currentUser.id);
+        }
       } else {
         setProfile(null);
         setLoading(false);
@@ -67,11 +80,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (!error && data) {
-        // Emergency Override: ensure owner is always super_admin
-        if (data.email === 'melina.figueroa.89@gmail.com' || data.full_name?.toLowerCase().includes('melina')) {
-          data.role = 'super_admin';
-        }
         setProfile(data);
+      } else {
+        // Fallback profile if record doesn't exist
+        setProfile({
+          id: userId,
+          full_name: 'Usuario',
+          role: 'parent',
+          created_at: new Date().toISOString()
+        });
       }
     } catch (e) {
       console.error("Error fetching profile:", e);
