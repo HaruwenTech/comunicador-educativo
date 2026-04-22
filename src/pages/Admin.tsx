@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
-import { Loader2, PlusCircle, LogOut, ShieldCheck, Settings, Type, FileText, Users, ArrowLeft } from 'lucide-react';
+import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
@@ -266,14 +266,31 @@ const Admin = () => {
 
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Fecha y Hora</label>
-                <input 
-                  type="datetime-local"
-                  className="input-field" 
-                  value={scheduledAt} 
-                  onChange={e => setScheduledAt(e.target.value)} 
-                  required
-                  style={{ padding: '0.8rem' }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <Calendar 
+                    size={18} 
+                    style={{ 
+                      position: 'absolute', 
+                      right: '1.25rem', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)', 
+                      color: 'var(--primary)',
+                      pointerEvents: 'none',
+                      zIndex: 1
+                    }} 
+                  />
+                  <input
+                    type="datetime-local"
+                    className="calendar-input"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    required
+                    style={{ 
+                      paddingRight: '3.5rem',
+                      cursor: 'pointer'
+                    }}
+                  />
+                </div>
               </div>
 
               <div>

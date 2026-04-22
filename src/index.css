@@ -249,24 +249,41 @@ button {
   background: var(--secondary);
 }
 /* Modern Datetime picker accessibility */
-input[type="datetime-local"] {
-  cursor: pointer;
-  position: relative;
-  min-height: 3.5rem;
+.calendar-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  color: var(--foreground);
+  font-family: inherit;
   font-size: 1rem;
-}
-
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  padding: 8px;
-  filter: invert(0.5);
+  font-weight: 600;
   transition: all 0.2s ease;
-  background: rgba(79, 70, 229, 0.05);
-  border-radius: 8px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator {
-  transform: scale(1.15);
-  filter: invert(0.3);
-  background: rgba(79, 70, 229, 0.1);
+.calendar-input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.calendar-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="datetime-local"] {
+  min-height: 3.5rem;
 }
