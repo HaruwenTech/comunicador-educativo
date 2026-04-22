@@ -20,22 +20,31 @@ const Home = () => {
 
   const fetchAnnouncements = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Safety timeout: don't let the spinner run forever
+    const timeout = setTimeout(() => setLoading(false), 5000);
 
-    if (!error && data) {
-      let filtered = data;
-      if (selectedGrade !== 'all') {
-        filtered = filtered.filter(a => a.grade.includes(selectedGrade) || a.grade.includes('Todas'));
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        let filtered = data;
+        if (selectedGrade !== 'all') {
+          filtered = filtered.filter(a => a.grade.includes(selectedGrade) || a.grade.includes('Todas'));
+        }
+        if (selectedSection !== 'all') {
+          filtered = filtered.filter(a => a.section.includes(selectedSection) || a.section.includes('Todas'));
+        }
+        setAnnouncements(filtered);
       }
-      if (selectedSection !== 'all') {
-        filtered = filtered.filter(a => a.section.includes(selectedSection) || a.section.includes('Todas'));
-      }
-      setAnnouncements(filtered);
+    } catch (e) {
+      console.error("Error fetching announcements:", e);
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
