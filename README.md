@@ -1,73 +1,30 @@
-# React + TypeScript + Vite
+# W.I.N. - Wayen Info Network ⚡
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**W.I.N.** es una plataforma moderna y potente para la comunicación escolar, diseñada para conectar a las instituciones educativas con las familias de forma inmediata, segura y elegante.
 
-Currently, two official plugins are available:
+Basada en el concepto de **Wayen** (Selk'nam para "Ahora"), esta herramienta prioriza la inmediatez y la claridad en la información.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Características Principales
 
-## React Compiler
+- **Dashboard Moderno**: Interfaz intuitiva con diseño premium y glassmorphism.
+- **Alertas en Tiempo Real**: Notificaciones inmediatas para avisos urgentes o cambios de horario.
+- **Gestión por Roles**: Acceso diferenciado para Super Administradores, Administradores y Familias (Padres).
+- **Filtros Inteligentes**: Visualización personalizada por grado y sección.
+- **Power Identity**: Marca inspirada en raíces patagónicas con una estética de alto impacto.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologías
 
-## Expanding the ESLint configuration
+- **Frontend**: React + TypeScript + Vite
+- **Estilos**: CSS Moderno (Vanilla) con variables y diseño responsivo.
+- **Backend**: Supabase (Autenticación, Base de datos y Real-time).
+- **Animaciones**: Framer Motion para una experiencia de usuario fluida.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 📦 Instalación
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Clona el repositorio
+2. Instala las dependencias: `npm install`
+3. Configura tus variables de entorno de Supabase en un archivo `.env`
+4. Inicia el servidor de desarrollo: `npm run dev`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+Hecho con ❤️ por **HaruwenTech**
