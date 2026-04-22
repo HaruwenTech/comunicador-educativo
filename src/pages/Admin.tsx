@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
-import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell, Calendar } from 'lucide-react';
+import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell, Calendar, AlertTriangle, RefreshCw, Edit2, Trash2, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
@@ -12,15 +12,19 @@ const Admin = () => {
   const { notify } = useNotification();
   const [submitting, setSubmitting] = useState(false);
   
+  // Form State
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [type, setType] = useState<AnnouncementType>('info');
   const [selectedGrades, setSelectedGrades] = useState<string[]>(['1ro']);
   const [selectedSections, setSelectedSections] = useState<string[]>(['A']);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [scheduledAt, setScheduledAt] = useState(new Date().toISOString().slice(0, 16));
+  
+  // App State
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const navigate = useNavigate();
 
@@ -35,20 +39,6 @@ const Admin = () => {
     setLoadingAnnouncements(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este comunicado?')) return;
-    
-    try {
-      const { error } = await supabase.from('announcements').delete().eq('id', id);
-      if (error) throw error;
-
-      notify('Comunicado eliminado', 'success');
-      fetchAnnouncements();
-    } catch (error: any) {
-      notify('Error al eliminar: ' + error.message, 'error');
-    }
-  };
-
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'granted') {
       setNotificationsEnabled(true);
@@ -56,321 +46,206 @@ const Admin = () => {
     if (profile) fetchAnnouncements();
   }, [profile]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleEdit = (a: any) => {
+    setEditingId(a.id);
+    setTitle(a.title);
+    setContent(a.content);
+    setType(a.type);
+    setSelectedGrades(a.grade.split(', '));
+    setSelectedSections(a.section.split(', '));
+    if (a.scheduled_at) setScheduledAt(new Date(a.scheduled_at).toISOString().slice(0, 16));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle('');
+    setContent('');
+    setType('info');
+    setSelectedGrades(['1ro']);
+    setSelectedSections(['A']);
+    setScheduledAt(new Date().toISOString().slice(0, 16));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !content) return;
     
     setSubmitting(true);
-    const { error } = await supabase.from('announcements').insert([
-      { 
-        title, 
-        content, 
-        type, 
-        grade: selectedGrades.join(', '), 
-        section: selectedSections.join(', '), 
-        author_id: profile?.id 
-      }
-    ]);
+    const payload = { 
+      title, 
+      content, 
+      type, 
+      grade: selectedGrades.join(', '), 
+      section: selectedSections.join(', '), 
+      author_id: profile?.id 
+    };
+
+    const { error } = editingId 
+      ? await supabase.from('announcements').update(payload).eq('id', editingId)
+      : await supabase.from('announcements').insert([payload]);
 
     if (!error) {
-      notify('El comunicado ha sido publicado con éxito', 'success', '¡Publicado!');
-      setTitle('');
-      setContent('');
-      setType('info');
-      setSelectedGrades(['1ro']);
-      setSelectedSections(['A']);
-      setScheduledAt(new Date().toISOString().slice(0, 16));
+      notify(editingId ? 'Cambios guardados' : 'Publicado con éxito', 'success');
+      resetForm();
       fetchAnnouncements();
     } else {
-      notify('No se pudo publicar: ' + error.message, 'error');
+      notify('Error: ' + error.message, 'error');
     }
     setSubmitting(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este comunicado?')) return;
+    try {
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (error) throw error;
+      notify('Comunicado eliminado', 'success');
+      fetchAnnouncements();
+    } catch (error: any) {
+      notify('Error: ' + error.message, 'error');
+    }
   };
 
   if (profile?.role === 'parent') {
     return (
       <main className="container" style={{ textAlign: 'center', marginTop: '6rem' }}>
-        <div style={{ background: '#fff1f2', color: '#be123c', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-          <ShieldCheck size={40} />
-        </div>
-        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Acceso Denegado</h2>
-        <p style={{ color: 'var(--secondary)', maxWidth: '400px', margin: '0 auto' }}>Lo sentimos, esta sección es exclusiva para personal administrativo autorizado.</p>
-        <button className="btn-primary" style={{ marginTop: '2rem' }} onClick={() => navigate('/')}>
-          Regresar al Inicio
-        </button>
+        <ShieldCheck size={80} color="#be123c" style={{ marginBottom: '1.5rem' }} />
+        <h2>Acceso Denegado</h2>
+        <button className="btn-primary" onClick={() => navigate('/')}>Volver</button>
       </main>
     );
   }
 
+  const stats = {
+    total: announcements.length,
+    urgent: announcements.filter(a => a.type === 'urgent' || a.type === 'strike').length,
+    today: announcements.filter(a => new Date(a.created_at).toDateString() === new Date().toDateString()).length,
+  };
+
   return (
-    <main className="container" style={{ marginTop: '2rem', paddingBottom: '5rem', maxWidth: '1000px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <button 
-            onClick={() => navigate('/')} 
-            className="btn-secondary"
-            style={{ width: '40px', height: '40px', padding: 0, borderRadius: '12px' }}
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--primary)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <Settings size={14} />
-              Administración
-            </div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Publicar Aviso</h2>
-          </div>
+    <main className="container" style={{ marginTop: '2rem', paddingBottom: '5rem', maxWidth: '1200px' }}>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: '#1e293b' }}>Panel Administrativo</h2>
+          <p style={{ color: 'var(--secondary)', fontWeight: 600 }}>Bienvenida, {profile?.full_name || 'Admin'}. Aquí tienes el control total de W.I.N.</p>
         </div>
-        
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button 
-            onClick={() => {
-              if ('Notification' in window) {
-                Notification.requestPermission().then(permission => {
-                  if (permission === 'granted') {
-                    setNotificationsEnabled(true);
-                    notify('Notificaciones activadas', 'success');
-                  }
-                });
-              }
-            }}
-            className="btn-secondary"
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.6rem 1rem', 
-              background: notificationsEnabled ? 'var(--primary)' : '#f8fafc', 
-              color: notificationsEnabled ? 'white' : 'var(--secondary)',
-              border: notificationsEnabled ? 'none' : '1px solid var(--border)', 
-              fontSize: '0.875rem' 
-            }}
-          >
-            <Bell size={18} fill={notificationsEnabled ? "currentColor" : "none"} />
-            {notificationsEnabled ? 'Alertas Activas' : 'Recibir Alertas'}
-          </button>
-          <div style={{ textAlign: 'right' }} className="hide-mobile">
-            <p style={{ fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{profile?.full_name || profile?.email || user?.email}</p>
-            <p style={{ fontSize: '0.7rem', color: 'var(--secondary)', margin: 0 }}>
-              {profile?.role === 'super_admin' ? 'Super Administrador' : 'Administrador'}
-            </p>
-          </div>
-        </div>
+        <button onClick={() => navigate('/')} className="btn-secondary" style={{ borderRadius: '12px' }}>
+          <ArrowLeft size={18} /> Volver al Inicio
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', alignItems: 'start' }}>
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="card" 
-          style={{ padding: '2rem', position: 'sticky', top: '2rem' }}
-        >
-          <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <PlusCircle size={20} color="var(--primary)" />
-            Nuevo Comunicado
+      {/* Stats Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+        {[
+          { label: 'Total Comunicados', value: stats.total, icon: <FileText color="#6366f1" />, bg: '#eef2ff' },
+          { label: 'Alertas Hoy', value: stats.today, icon: <Bell color="#10b981" />, bg: '#ecfdf5' },
+          { label: 'Urgentes/Paros', value: stats.urgent, icon: <AlertTriangle color="#ef4444" />, bg: '#fef2f2' },
+          { label: 'Personal Admin', value: '4 Activos', icon: <Users color="#f59e0b" />, bg: '#fffbeb' },
+        ].map((s, i) => (
+          <motion.div key={i} whileHover={{ y: -5 }} className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.2rem', border: 'none', background: 'white' }}>
+            <div style={{ padding: '1rem', background: s.bg, borderRadius: '16px' }}>{s.icon}</div>
+            <div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 700, margin: 0 }}>{s.label}</p>
+              <h4 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{s.value}</h4>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '2rem', alignItems: 'start' }}>
+        {/* Left: Form */}
+        <motion.div className="card" style={{ padding: '2rem', background: 'white' }}>
+          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800 }}>
+            {editingId ? <Edit2 size={20} color="var(--primary)" /> : <PlusCircle size={20} color="var(--primary)" />}
+            {editingId ? 'Editar Comunicado' : 'Nuevo Comunicado'}
           </h3>
-          <form onSubmit={handleCreate}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Categoría</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>CATEGORÍA</label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.4rem' }}>
                   {(['info', 'strike', 'early_dismissal', 'urgent'] as AnnouncementType[]).map(t => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setType(t)}
-                      style={{
-                        padding: '0.6rem',
-                        fontSize: '0.75rem',
-                        borderRadius: '10px',
-                        background: type === t ? 'var(--primary)' : '#f8fafc',
-                        color: type === t ? 'white' : 'var(--secondary)',
-                        border: '1px solid',
-                        borderColor: type === t ? 'var(--primary)' : 'var(--border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      <span>{t === 'info' ? 'ℹ️' : t === 'strike' ? '📢' : t === 'early_dismissal' ? '🕒' : '🚨'}</span>
-                      {t === 'info' ? 'General' : t === 'strike' ? 'Paro' : t === 'early_dismissal' ? 'Salida' : 'Urgente'}
+                    <button key={t} type="button" onClick={() => setType(t)} style={{ padding: '0.6rem', borderRadius: '12px', background: type === t ? 'var(--primary)' : '#f1f5f9', color: type === t ? 'white' : '#64748b', border: 'none', fontSize: '0.75rem', fontWeight: 700, transition: '0.2s' }}>
+                      {t === 'info' ? 'ℹ️ General' : t === 'strike' ? '📢 Paro' : t === 'early_dismissal' ? '🕒 Salida' : '🚨 Urgente'}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Destinatarios (Grados)</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>DESTINATARIOS</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.8rem' }}>
                   {['1ro', '2do', '3ro', '4to', '5to', '6to', 'Todas'].map(g => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => {
-                        if (g === 'Todas') setSelectedGrades(['Todas']);
-                        else setSelectedGrades(prev => prev.filter(i => i !== 'Todas').includes(g) ? prev.filter(i => i !== g) : [...prev.filter(i => i !== 'Todas'), g]);
-                      }}
-                      style={{
-                        padding: '0.4rem 0.6rem',
-                        fontSize: '0.75rem',
-                        borderRadius: '8px',
-                        background: selectedGrades.includes(g) ? 'var(--primary)' : '#f8fafc',
-                        color: selectedGrades.includes(g) ? 'white' : 'var(--secondary)',
-                        border: '1px solid var(--border)',
-                        fontWeight: 600
-                      }}
-                    >
+                    <button key={g} type="button" onClick={() => g === 'Todas' ? setSelectedGrades(['Todas']) : setSelectedGrades(prev => prev.includes(g) ? prev.filter(i => i !== g) : [...prev.filter(i => i !== 'Todas'), g])}
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', background: selectedGrades.includes(g) ? '#4f46e5' : '#f1f5f9', color: selectedGrades.includes(g) ? 'white' : '#64748b', border: 'none', fontSize: '0.75rem', fontWeight: 700 }}>
                       {g}
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Secciones</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                   {['A', 'B', 'C', 'Todas'].map(s => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => {
-                        if (s === 'Todas') setSelectedSections(['Todas']);
-                        else setSelectedSections(prev => prev.filter(i => i !== 'Todas').includes(s) ? prev.filter(i => i !== s) : [...prev.filter(i => i !== 'Todas'), s]);
-                      }}
-                      style={{
-                        padding: '0.4rem 0.6rem',
-                        fontSize: '0.75rem',
-                        borderRadius: '8px',
-                        background: selectedSections.includes(s) ? 'var(--primary)' : '#f8fafc',
-                        color: selectedSections.includes(s) ? 'white' : 'var(--secondary)',
-                        border: '1px solid var(--border)',
-                        fontWeight: 600
-                      }}
-                    >
-                      {s}
+                    <button key={s} type="button" onClick={() => s === 'Todas' ? setSelectedSections(['Todas']) : setSelectedSections(prev => prev.includes(s) ? prev.filter(i => i !== s) : [...prev.filter(i => i !== 'Todas'), s])}
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '8px', background: selectedSections.includes(s) ? '#10b981' : '#f1f5f9', color: selectedSections.includes(s) ? 'white' : '#64748b', border: 'none', fontSize: '0.75rem', fontWeight: 700 }}>
+                      Sección {s}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Asunto</label>
-                <input 
-                  className="input-field" 
-                  placeholder="Título breve..." 
-                  value={title} 
-                  onChange={e => setTitle(e.target.value)} 
-                  required
-                  style={{ padding: '0.8rem' }}
-                />
+              <input className="input-field" placeholder="Título del aviso..." value={title} onChange={e => setTitle(e.target.value)} required />
+              
+              <div style={{ position: 'relative' }}>
+                <Calendar size={18} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', pointerEvents: 'none' }} />
+                <input type="datetime-local" className="calendar-input" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} required />
               </div>
 
-              <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Fecha y Hora</label>
-                <div style={{ position: 'relative' }}>
-                  <Calendar 
-                    size={18} 
-                    style={{ 
-                      position: 'absolute', 
-                      right: '1.25rem', 
-                      top: '50%', 
-                      transform: 'translateY(-50%)', 
-                      color: 'var(--primary)',
-                      pointerEvents: 'none',
-                      zIndex: 1
-                    }} 
-                  />
-                  <input
-                    type="datetime-local"
-                    className="calendar-input"
-                    value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
-                    required
-                    style={{ 
-                      paddingRight: '3.5rem',
-                      cursor: 'pointer'
-                    }}
-                  />
-                </div>
-              </div>
+              <textarea className="input-field" style={{ minHeight: '120px', resize: 'none' }} placeholder="Escribe el mensaje aquí..." value={content} onChange={e => setContent(e.target.value)} required />
 
-              <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Mensaje Completo</label>
-                <textarea 
-                  className="input-field" 
-                  style={{ minHeight: '120px', resize: 'none', padding: '0.8rem' }}
-                  placeholder="Detalles del aviso..." 
-                  value={content} 
-                  onChange={e => setContent(e.target.value)} 
-                  required
-                />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {editingId && <button type="button" onClick={resetForm} className="btn-secondary" style={{ flex: 1 }}>Cancelar</button>}
+                <button className="btn-primary" style={{ flex: 2, padding: '1rem' }} disabled={submitting}>
+                  {submitting ? <Loader2 className="animate-spin" /> : (editingId ? 'Guardar Cambios' : 'Publicar Ahora')}
+                </button>
               </div>
-
-              <button 
-                className="btn-primary" 
-                style={{ width: '100%', padding: '1rem', borderRadius: '14px' }} 
-                disabled={submitting}
-              >
-                {submitting ? <Loader2 className="animate-spin" /> : 'Publicar Comunicado'}
-              </button>
             </div>
           </form>
         </motion.div>
 
-        {/* Lado Derecho: Gestión */}
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
-        >
+        {/* Right: Management List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <FileText size={20} color="var(--primary)" />
-              Historial y Gestión
-            </h3>
-            <span style={{ fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontWeight: 700 }}>
-              {announcements.length} Comunicados
-            </span>
+            <h3 style={{ fontWeight: 800, color: '#1e293b' }}>Gestión de Contenido</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={fetchAnnouncements} className="btn-secondary" style={{ padding: '0.5rem', borderRadius: '10px' }}><RefreshCw size={16} /></button>
+            </div>
           </div>
 
           {loadingAnnouncements ? (
-            <div style={{ textAlign: 'center', padding: '3rem' }}>
-              <Loader2 className="animate-spin" size={30} color="var(--primary)" />
-            </div>
+            <div style={{ textAlign: 'center', padding: '5rem' }}><Loader2 className="animate-spin" size={40} color="var(--primary)" /></div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {announcements.map((a) => (
-                <div key={a.id} className="card" style={{ padding: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: '4px solid var(--primary)' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.4rem' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--secondary)' }}>
-                        {new Date(a.created_at).toLocaleDateString()}
-                      </span>
-                      <span style={{ fontSize: '0.7rem', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>
-                        {a.grade} - {a.section}
-                      </span>
+              {announcements.map(a => (
+                <motion.div key={a.id} layout className="card" style={{ padding: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #f1f5f9' }}>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#94a3b8' }}>{new Date(a.created_at).toLocaleDateString()}</span>
+                      <span style={{ fontSize: '0.65rem', fontWeight: 900, color: 'var(--primary)', background: 'rgba(79, 70, 229, 0.1)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{a.grade} {a.section}</span>
                     </div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.2rem' }}>{a.title}</h4>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '400px' }}>
-                      {a.content}
-                    </p>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, color: '#334155' }}>{a.title}</h4>
+                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0.2rem 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.content}</p>
                   </div>
-                  <button 
-                    onClick={() => handleDelete(a.id)}
-                    style={{ color: '#ef4444', padding: '0.5rem', borderRadius: '8px', background: '#fee2e2' }}
-                    title="Eliminar"
-                  >
-                    <ShieldCheck size={18} />
-                  </button>
-                </div>
+                  <div style={{ display: 'flex', gap: '0.4rem', marginLeft: '1rem' }}>
+                    <button onClick={() => handleEdit(a)} style={{ padding: '0.6rem', borderRadius: '10px', background: '#f1f5f9', color: '#64748b', border: 'none', cursor: 'pointer' }}><Edit2 size={16} /></button>
+                    <button onClick={() => handleDelete(a.id)} style={{ padding: '0.6rem', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                  </div>
+                </motion.div>
               ))}
-              {announcements.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--secondary)', background: '#f8fafc', borderRadius: '20px', border: '2px dashed var(--border)' }}>
-                  No hay comunicados para gestionar.
-                </div>
-              )}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </main>
   );
