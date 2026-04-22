@@ -12,8 +12,15 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [selectedGrade, setSelectedGrade] = useState('all');
   const [selectedSection, setSelectedSection] = useState('all');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const { profile } = useAuth();
   const { notify } = useNotification();
+
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      setNotificationsEnabled(true);
+    }
+  }, []);
 
   const grades = ['all', '1ro', '2do', '3ro', '4to', '5to', '6to'];
   const sections = ['all', 'A', 'B', 'C'];
@@ -121,12 +128,31 @@ const Home = () => {
             </div>
             <button 
               onClick={() => {
-                if ('Notification' in window) Notification.requestPermission().then(() => notify('Notificaciones activadas', 'success'));
+                if ('Notification' in window) {
+                  Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                      setNotificationsEnabled(true);
+                      notify('Notificaciones activadas', 'success');
+                    }
+                  });
+                }
               }}
-              style={{ padding: '0.6rem 1rem', background: '#f8fafc', border: '1px solid var(--border)', fontSize: '0.875rem' }}
+              style={{ 
+                padding: '0.6rem 1rem', 
+                background: notificationsEnabled ? 'var(--primary)' : '#f8fafc', 
+                color: notificationsEnabled ? 'white' : 'var(--secondary)',
+                border: notificationsEnabled ? 'none' : '1px solid var(--border)', 
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
             >
-              <Bell size={18} />
-              Recibir Alertas
+              <Bell size={18} fill={notificationsEnabled ? "currentColor" : "none"} />
+              {notificationsEnabled ? 'Alertas Activas' : 'Recibir Alertas'}
             </button>
           </div>
 

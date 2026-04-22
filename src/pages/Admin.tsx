@@ -17,14 +17,12 @@ const Admin = () => {
   const [type, setType] = useState<AnnouncementType>('info');
   const [selectedGrades, setSelectedGrades] = useState<string[]>(['1ro']);
   const [selectedSections, setSelectedSections] = useState<string[]>(['A']);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [scheduledAt, setScheduledAt] = useState(new Date().toISOString().slice(0, 16));
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
 
   const navigate = useNavigate();
-
-  const grades = ['all', '1ro', '2do', '3ro', '4to', '5to', '6to'];
-  const sections = ['all', 'A', 'B', 'C'];
 
   const fetchAnnouncements = async () => {
     setLoadingAnnouncements(true);
@@ -40,16 +38,21 @@ const Admin = () => {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de que deseas eliminar este comunicado?')) return;
     
-    const { error } = await supabase.from('announcements').delete().eq('id', id);
-    if (!error) {
+    try {
+      const { error } = await supabase.from('announcements').delete().eq('id', id);
+      if (error) throw error;
+
       notify('Comunicado eliminado', 'success');
       fetchAnnouncements();
-    } else {
+    } catch (error: any) {
       notify('Error al eliminar: ' + error.message, 'error');
     }
   };
 
   useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      setNotificationsEnabled(true);
+    }
     if (profile) fetchAnnouncements();
   }, [profile]);
 
@@ -73,6 +76,10 @@ const Admin = () => {
       notify('El comunicado ha sido publicado con éxito', 'success', '¡Publicado!');
       setTitle('');
       setContent('');
+      setType('info');
+      setSelectedGrades(['1ro']);
+      setSelectedSections(['A']);
+      setScheduledAt(new Date().toISOString().slice(0, 16));
       fetchAnnouncements();
     } else {
       notify('No se pudo publicar: ' + error.message, 'error');
@@ -116,6 +123,30 @@ const Admin = () => {
         </div>
         
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button 
+            onClick={() => {
+              if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                  if (permission === 'granted') {
+                    setNotificationsEnabled(true);
+                    notify('Notificaciones activadas', 'success');
+                  }
+                });
+              }
+            }}
+            className="btn-secondary"
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.6rem 1rem', 
+              background: notificationsEnabled ? 'var(--primary)' : '#f8fafc', 
+              color: notificationsEnabled ? 'white' : 'var(--secondary)',
+              border: notificationsEnabled ? 'none' : '1px solid var(--border)', 
+              fontSize: '0.875rem' 
+            }}
+          >
+            <Bell size={18} fill={notificationsEnabled ? "currentColor" : "none"} />
+            {notificationsEnabled ? 'Alertas Activas' : 'Recibir Alertas'}
+          </button>
           <div style={{ textAlign: 'right' }} className="hide-mobile">
             <p style={{ fontWeight: 700, fontSize: '0.85rem', margin: 0 }}>{profile?.full_name || profile?.email || user?.email}</p>
             <p style={{ fontSize: '0.7rem', color: 'var(--secondary)', margin: 0 }}>
@@ -126,7 +157,6 @@ const Admin = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem', alignItems: 'start' }}>
-        {/* Lado Izquierdo: Crear Nuevo */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
