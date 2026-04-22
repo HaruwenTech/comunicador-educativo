@@ -197,9 +197,54 @@ const Admin = () => {
 
               <input className="input-field" placeholder="Título del aviso..." value={title} onChange={e => setTitle(e.target.value)} required />
               
-              <div style={{ position: 'relative' }}>
-                <Calendar size={18} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', pointerEvents: 'none' }} />
-                <input type="datetime-local" className="calendar-input" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} required />
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', marginBottom: '0.8rem', display: 'block' }}>PROGRAMAR PUBLICACIÓN</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ position: 'relative' }}>
+                    <Calendar size={18} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', pointerEvents: 'none' }} />
+                    <input 
+                      type="date" 
+                      className="calendar-input" 
+                      value={scheduledAt.split('T')[0]} 
+                      onChange={e => setScheduledAt(`${e.target.value}T${scheduledAt.split('T')[1] || '08:00'}`)} 
+                      required 
+                    />
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <Clock size={18} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--primary)', pointerEvents: 'none' }} />
+                    <input 
+                      type="time" 
+                      className="calendar-input" 
+                      value={scheduledAt.split('T')[1]} 
+                      onChange={e => setScheduledAt(`${scheduledAt.split('T')[0]}T${e.target.value}`)} 
+                      required 
+                    />
+                  </div>
+                </div>
+                
+                {/* Quick Time Selectors */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {['08:00', '13:00', '17:00', '20:00'].map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setScheduledAt(`${scheduledAt.split('T')[0]}T${t}`)}
+                      style={{
+                        padding: '0.4rem 0.8rem',
+                        fontSize: '0.7rem',
+                        borderRadius: '8px',
+                        background: (scheduledAt.split('T')[1] || '').startsWith(t) ? 'var(--primary)' : '#f1f5f9',
+                        color: (scheduledAt.split('T')[1] || '').startsWith(t) ? 'white' : '#64748b',
+                        border: 'none',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: '0.2s'
+                      }}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <textarea className="input-field" style={{ minHeight: '120px', resize: 'none' }} placeholder="Escribe el mensaje aquí..." value={content} onChange={e => setContent(e.target.value)} required />
