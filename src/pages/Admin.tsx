@@ -18,6 +18,7 @@ const Admin = () => {
   const [selectedGrades, setSelectedGrades] = useState<string[]>(['1ro']);
   const [selectedSections, setSelectedSections] = useState<string[]>(['A']);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [scheduledAt, setScheduledAt] = useState(new Date().toISOString().slice(0, 16));
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
 
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Admin = () => {
     setLoadingAnnouncements(true);
     const { data, error } = await supabase
       .from('announcements')
-      .select('*, profiles(full_name)')
+      .select('*')
       .order('created_at', { ascending: false });
     
     if (!error && data) setAnnouncements(data);
@@ -201,6 +202,18 @@ const Admin = () => {
                   placeholder="Título breve..." 
                   value={title} 
                   onChange={e => setTitle(e.target.value)} 
+                  required
+                  style={{ padding: '0.8rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>Fecha y Hora</label>
+                <input 
+                  type="datetime-local"
+                  className="input-field" 
+                  value={scheduledAt} 
+                  onChange={e => setScheduledAt(e.target.value)} 
                   required
                   style={{ padding: '0.8rem' }}
                 />
