@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AnnouncementType } from '../types';
-import { Loader2, PlusCircle, ShieldCheck, Settings, FileText, ArrowLeft, Bell, Calendar, AlertTriangle, RefreshCw, Edit2, Trash2, Users } from 'lucide-react';
+import { Loader2, PlusCircle, ShieldCheck, FileText, ArrowLeft, Bell, Calendar, AlertTriangle, RefreshCw, Edit2, Trash2, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../components/NotificationProvider';
 import { motion } from 'framer-motion';
 
 const Admin = () => {
-  const { user, profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const { notify } = useNotification();
   const [submitting, setSubmitting] = useState(false);
   
@@ -24,7 +24,7 @@ const Admin = () => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled] = useState(false);
 
   const navigate = useNavigate();
 
