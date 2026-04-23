@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
-
 import type { Profile } from '../types';
+
+// Known super admin emails — immediate role detection while DB loads
+const SUPER_ADMINS = ['melina.figueroa.89@gmail.com'];
 
 interface AuthContextType {
   user: User | null;
@@ -22,30 +24,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchedFor = useRef<string | null>(null); // prevent double-fetch
+
+  const fetchProfile = async (authUser: User) => {
+    // Already fetching for this user — skip
+    if (fetchedFor.current === authUser.id) return;
+    fetchedFor.current = authUser.id;
+
+    // ① Optimistic: set role immediately from known list so UI doesn't wait
+    if (SUPER_ADMINS.includes(authUser.email ?? '')) {
+      setProfile(prev => prev ?? {
+        id: authUser.id,
+        email: authUser.email ?? '',
+        full_name: '',
+        role: 'super_admin',
+        grade: null,
+        section: null,
+      });
+    }
+
+    // ② Fetch real profile from DB
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (!error && data) {
+        setProfile(data);
+      } else {
+        // Fallback — use email to determine role
+        setProfile({
+          id: authUser.id,
+          email: authUser.email ?? '',
+          full_name: authUser.email?.split('@')[0] ?? 'Usuario',
+          role: SUPER_ADMINS.includes(authUser.email ?? '') ? 'super_admin' : 'parent',
+          grade: null,
+          section: null,
+        });
+      }
+    } catch {
+      // Network error — still show something usable
+      setProfile({
+        id: authUser.id,
+        email: authUser.email ?? '',
+        full_name: authUser.email?.split('@')[0] ?? 'Usuario',
+        role: SUPER_ADMINS.includes(authUser.email ?? '') ? 'super_admin' : 'parent',
+        grade: null,
+        section: null,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Safety fallback: ensure loading is turned off eventually
-    const timer = setTimeout(() => {
-      setLoading(() => {
-        return false;
-      });
-    }, 5000);
+    // Hard timeout — never leave user on loading screen
+    const timer = setTimeout(() => setLoading(false), 4000);
 
-    // Get initial session
+    // Initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) fetchProfile(u);
       else setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
+    // Auth state changes (login / logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        fetchProfile(u);
       } else {
+        // Signed out — clear everything
+        fetchedFor.current = null;
         setProfile(null);
         setLoading(false);
       }
@@ -57,35 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (!error && data) {
-        setProfile(data);
-      } else {
-        // Fallback profile if record doesn't exist
-        setProfile({
-          id: userId,
-          email: '',
-          full_name: 'Usuario',
-          role: 'parent',
-          grade: null,
-          section: null
-        });
-      }
-    } catch (e) {
-      console.error("Error fetching profile:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const signOut = async () => {
+    fetchedFor.current = null;
+    setProfile(null);
+    setUser(null);
     await supabase.auth.signOut();
   };
 
