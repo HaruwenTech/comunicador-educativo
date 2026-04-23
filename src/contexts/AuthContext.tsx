@@ -44,20 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentUser);
       
       if (currentUser) {
-        // Assign role immediately based on email if it's the owner
-        if (currentUser.email === 'melina.figueroa.89@gmail.com') {
-          setProfile({
-            id: currentUser.id,
-            email: currentUser.email || '',
-            full_name: 'Melina Figueroa',
-            role: 'super_admin',
-            grade: null,
-            section: null
-          });
-          setLoading(false);
-        } else {
-          await fetchProfile(currentUser.id);
-        }
+        await fetchProfile(currentUser.id);
       } else {
         setProfile(null);
         setLoading(false);
